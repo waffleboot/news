@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/waffleboot/news/client"
-	"github.com/waffleboot/news/storage"
+	"github.com/waffleboot/news/messaging"
 )
 
 func main() {
-	sf := storage.NewStorageService()
-	http.Handle("/", client.GetRouter(sf))
+	http.Handle("/", client.GetMuxRouter(messaging.NewService()))
 	http.ListenAndServe(":8000", nil)
 }

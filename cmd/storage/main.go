@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 
@@ -27,27 +26,32 @@ func main() {
 	})
 	defer dbClient.Close()
 
-	pubsub1 := msgClient.PSubscribe("create-request-*")
-	pubsub2 := msgClient.PSubscribe("find-request-*")
-	defer pubsub1.Close()
-	defer pubsub2.Close()
+	pubsubCR := msgClient.PSubscribe("create-request-*")
+	pubsubFR := msgClient.PSubscribe("find-request-*")
+	defer pubsubCR.Close()
+	defer pubsubFR.Close()
 
-	ch1 := pubsub1.Channel()
-	ch2 := pubsub2.Channel()
+	createChannel := pubsubCR.Channel()
+	findChannel := pubsubFR.Channel()
 	for {
 		select {
-		case msg := <-ch1:
+
+		case msg := <-createChannel:
 			id := msg.Channel[len("create-request-"):]
-			msgClient.Publish("create-reply-"+id, id)
-			fmt.Println(msg)
 			dbClient.Set(id, msg.Payload, 0)
-		case msg := <-ch2:
+
+			msgClient.Publish("create-reply-"+id, id)
+
+		case msg := <-findChannel:
 			id := msg.Channel[len("find-request-"):]
+
 			val, err := dbClient.Get(id).Result()
 			if err != nil {
+				msgClient.Publish("find-reply-"+id, "")
+			} else {
+				msgClient.Publish("find-reply-"+id, val)
 			}
-			msgClient.Publish("find-reply-"+id, val)
-			fmt.Println(msg)
+
 		case <-c:
 			return
 		}

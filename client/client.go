@@ -8,11 +8,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetRouter(apiStorage ApiStorage) *mux.Router {
+func GetMuxRouter(apiStorage ApiStorage) *mux.Router {
 	c := cli{ApiStorage: apiStorage}
 	r := mux.NewRouter()
 	r.HandleFunc("/news", c.createNewsHandler).Methods("POST")
-	r.HandleFunc("/news/{id}", c.getNewsByIdHandler).Methods("GET")
+	r.HandleFunc("/news/{id}", c.findNewsByIdHandler).Methods("GET")
 	return r
 }
 
@@ -22,46 +22,47 @@ type cli struct {
 
 func (c cli) createNewsHandler(w http.ResponseWriter, r *http.Request) {
 	if !hasApplicationJsonContentType(r.Header) {
+		w.Header()["X-Reason"] = []string{"unsupported or absent content-type"}
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("unsupported or absent content type"))
 		return
 	}
 	if r.Body == nil {
+		w.Header()["X-Reason"] = []string{"empty request body"}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var newsobj News
-	if err := json.NewDecoder(r.Body).Decode(&newsobj); err != nil {
+	var restobj News
+	if err := json.NewDecoder(r.Body).Decode(&restobj); err != nil {
+		w.Header()["X-Reason"] = []string{"error on parsing request body"}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	id, err := c.ApiStorage.CreateNews(newsobj)
+
+	id, err := c.ApiStorage.CreateNews(restobj)
 	if err != nil {
 		if err == ApiStorageTimeout {
+			w.Header()["X-Reason"] = []string{"request timeout"}
 			w.WriteHeader(http.StatusRequestTimeout)
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	w.Header()["Location"] = []string{fmt.Sprintf("/news/%v", id)}
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (c cli) getNewsByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c cli) findNewsByIdHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var ok bool
 	var id string
 	if id, ok = vars["id"]; !ok || id == "" {
+		w.Header()["X-Reason"] = []string{"absent id"}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	newsid, err := parseNewsId(id)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	newsobj, err := c.ApiStorage.FindNewsById(newsid)
+	restobj, err := c.ApiStorage.FindNewsById(id)
 	if err != nil {
 		if err == ApiStorageNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -70,8 +71,9 @@ func (c cli) getNewsByIdHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = json.NewEncoder(w).Encode(newsobj)
+	err = json.NewEncoder(w).Encode(restobj)
 	if err != nil {
+		w.Header()["X-Reason"] = []string{"error on encoding response body"}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
