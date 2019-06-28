@@ -15,7 +15,7 @@ func TestCreateNews(t *testing.T) {
 	}
 	req.Header["Content-Type"] = []string{application_json}
 	rr := httptest.NewRecorder()
-	router := GetRouter(apiStorageMock{})
+	router := GetMuxRouter(apiStorageMock{})
 	router.ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusCreated {
 		t.Fatalf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
@@ -36,7 +36,7 @@ func TestFindNewsById(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	router := GetRouter(apiStorageMock{})
+	router := GetMuxRouter(apiStorageMock{})
 	router.ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Fatalf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -44,7 +44,7 @@ func TestFindNewsById(t *testing.T) {
 	if !hasApplicationJsonContentType(rr.Header()) {
 		t.Fatal("handler returned invalid content type")
 	}
-	wantbody := `{"id":123456,"date":"now","title":"Hello, world"}
+	wantbody := `{"id":"123456","date":"now","title":"Hello, world"}
 `
 	if rr.Body.String() != wantbody {
 		t.Fatalf("handler returned wrong body: got %v want %v", rr.Body.String(), wantbody)
@@ -53,10 +53,10 @@ func TestFindNewsById(t *testing.T) {
 
 type apiStorageMock struct{}
 
-func (apiStorageMock) CreateNews(news News) (NewsId, error) {
-	return 123456, nil
+func (apiStorageMock) CreateNews(news News) (string, error) {
+	return "123456", nil
 }
 
-func (apiStorageMock) FindNewsById(newsId NewsId) (News, error) {
-	return News{Title: "Hello, world", Id: 123456, Date: "now"}, nil
+func (apiStorageMock) FindNewsById(newsid string) (News, error) {
+	return News{Title: "Hello, world", Id: "123456", Date: "now"}, nil
 }

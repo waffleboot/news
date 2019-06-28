@@ -67,6 +67,9 @@ func (c cli) findNewsByIdHandler(w http.ResponseWriter, r *http.Request) {
 		if err == ApiStorageNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
+		} else if err == ApiStorageTimeout {
+			w.WriteHeader(http.StatusRequestTimeout)
+			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
