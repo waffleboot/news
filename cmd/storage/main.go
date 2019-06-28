@@ -10,8 +10,6 @@ import (
 
 func main() {
 
-	storage := make(map[string]string)
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
@@ -21,6 +19,13 @@ func main() {
 		DB:       0,
 	})
 	defer msgClient.Close()
+
+	dbClient := redis.NewClient(&redis.Options{
+		Addr:     "database:6379",
+		Password: "",
+		DB:       0,
+	})
+	defer dbClient.Close()
 
 	pubsub1 := msgClient.PSubscribe("create-request-*")
 	pubsub2 := msgClient.PSubscribe("find-request-*")
@@ -33,13 +38,15 @@ func main() {
 		select {
 		case msg := <-ch1:
 			id := msg.Channel[len("create-request-"):]
-			storage[id] = msg.Payload
 			msgClient.Publish("create-reply-"+id, id)
 			fmt.Println(msg)
+			dbClient.Set(id, msg.Payload, 0)
 		case msg := <-ch2:
 			id := msg.Channel[len("find-request-"):]
-			r := storage[id]
-			msgClient.Publish("find-reply-"+id, r)
+			val, err := dbClient.Get(id).Result()
+			if err != nil {
+			}
+			msgClient.Publish("find-reply-"+id, val)
 			fmt.Println(msg)
 		case <-c:
 			return

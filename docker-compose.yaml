@@ -28,8 +28,15 @@ services:
         ipv4_address: 172.27.0.5
         aliases:
           - messaging
-    ports:
-      - "6379:6379"
+
+  database:
+    image: redis
+    container_name: database
+    networks:
+      my-net:
+        ipv4_address: 172.27.0.6
+        aliases:
+          - database
 
 networks:
   my-net:

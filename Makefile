@@ -9,7 +9,7 @@ storage: cmd/storage/* storage/*
 
 all: client storage
 
-up: client storage
+up:
 	docker-compose up -d
 	
 down:
