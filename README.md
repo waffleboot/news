@@ -35,3 +35,7 @@ UUID
 
 Request/Reply на очередях "create-request-UUID", "create-reply-UUID", "find-request-UUID", "find-reply-UUID".
 Каждой новости своя очередь в Redis.
+
+**Protobuf**
+
+news.proto
