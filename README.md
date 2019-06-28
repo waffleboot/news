@@ -8,7 +8,7 @@ $ make all
 
 **Запуск/Останов**
 
-с помощью docker-compose
+с помощью docker-compose (docker-compose.yaml и два Dockerfile)
 
 ```
 $ make up
