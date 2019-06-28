@@ -1,5 +1,5 @@
 
-.PHONY: client storage messaging
+.PHONY: client storage
 
 client:	cmd/client/* client/* messaging/*
 	docker build -f cmd/client/Dockerfile -t yangand/news/client .
