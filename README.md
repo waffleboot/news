@@ -2,14 +2,18 @@
 
 Внутри Docker через Makefile
 
-*make all*
+```
+$ make all
+```
 
 **Запуск/Останов**
 
 с помощью docker-compose
 
-*make up*
-*make down*
+```
+$ make up
+$ make down
+```
 
 **Очередь сообщений**
 
