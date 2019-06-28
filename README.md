@@ -39,3 +39,10 @@ Request/Reply на очередях "create-request-UUID", "create-reply-UUID", 
 **Protobuf**
 
 news.proto
+
+**Тесты**
+
+```
+curl -v -X POST http://localhost:8000/news -d '{"title":"hellow"}' -H "Content-Type: application/json"
+curl -v http://localhost:8000/news/01ca3f73-cde0-4d35-bb8a-96128b00ebb0
+```
