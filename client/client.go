@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -57,12 +56,12 @@ func (c cli) getNewsByIdHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	newsid, err := strconv.ParseUint(id, 10, 64)
+	newsid, err := parseNewsId(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	newsobj, err := c.ApiStorage.FindNewsById(NewsId(newsid))
+	newsobj, err := c.ApiStorage.FindNewsById(newsid)
 	if err != nil {
 		if err == ApiStorageNotFound {
 			w.WriteHeader(http.StatusNotFound)

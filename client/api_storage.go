@@ -9,5 +9,5 @@ var ApiStorageNotFound = errors.New("not found")
 
 type ApiStorage interface {
 	CreateNews(newsobj News) (NewsId, error)
-	FindNewsById(newsId NewsId) (News, error)
+	FindNewsById(newsid NewsId) (News, error)
 }

@@ -1,0 +1,41 @@
+version: "3.7"
+services:
+  client:
+    image: yangand/news/client
+    container_name: client
+    networks:
+      my-net:
+        ipv4_address: 172.27.0.3
+        aliases:
+          - client
+    ports:
+      - "8000:8000"
+
+  storage:
+    image: yangand/news/storage
+    container_name: storage
+    networks:
+      my-net:
+        ipv4_address: 172.27.0.4
+        aliases:
+          - storage
+
+  messaging:
+    image: redis
+    container_name: messaging
+    networks:
+      my-net:
+        ipv4_address: 172.27.0.5
+        aliases:
+          - messaging
+    ports:
+      - "6379:6379"
+
+networks:
+  my-net:
+    name: my-net
+    ipam:
+      config:
+        - subnet: 172.27.0.0/16
+
+  
